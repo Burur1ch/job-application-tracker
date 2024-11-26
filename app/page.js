@@ -1,38 +1,68 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Modal from './components/Modal';
+import React, { useState, useEffect } from "react";
+import Modal from "./components/Modal";
+import {
+  fetchApplications,
+  createApplication,
+  updateApplication,
+  deleteApplication,
+} from "./services/api";
 
 const Home = () => {
-  const [applications, setApplications] = useState([
-    {
-      id: 1,
-      company: 'Компания 1',
-      position: 'Frontend Developer',
-      salary: '1000-2000$',
-      status: 'Ожидание ответа',
-      note: 'Отправлено 2 дня назад',
-    },
-  ]);
-  const [editingApplication, setEditingApplication] = useState(null);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [applications, setApplications] = useState([]); // Данные из API
+  const [editingApplication, setEditingApplication] = useState(null); // Для редактирования
+  const [isModalOpen, setModalOpen] = useState(false); // Управление модальным окном
+  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [error, setError] = useState(null); // Ошибки
 
-  const handleAddApplication = (newApplication) => {
-    setApplications((prev) => [
-      ...prev,
-      { ...newApplication, id: prev.length + 1 },
-    ]);
+  // Загружаем данные с сервера
+  useEffect(() => {
+    const loadApplications = async () => {
+      try {
+        const data = await fetchApplications();
+        setApplications(data);
+      } catch (err) {
+        setError("Ошибка загрузки данных");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApplications();
+  }, []);
+
+  // Добавление новой записи
+  const handleAddApplication = async (newApplication) => {
+    try {
+      const addedApplication = await createApplication(newApplication);
+      setApplications((prev) => [...prev, addedApplication]);
+    } catch (err) {
+      setError("Ошибка добавления записи");
+    }
   };
 
-  const handleDelete = (id) => {
-    setApplications((prev) => prev.filter((app) => app.id !== id));
-  };  
+  // Удаление записи
+  const handleDelete = async (id) => {
+    if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
 
+    try {
+      await deleteApplication(id);
+      setApplications((prev) => prev.filter((app) => app._id !== id));
+    } catch (err) {
+      setError("Ошибка удаления записи");
+    }
+  };
+
+  // Открытие модального окна для редактирования
   const handleEdit = (id) => {
-    const appToEdit = applications.find((app) => app.id === id);
+    const appToEdit = applications.find((app) => app._id === id);
     setEditingApplication(appToEdit);
     setModalOpen(true);
   };
+
+  if (loading) return <p>Загрузка...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -51,57 +81,65 @@ const Home = () => {
             <th className="border p-2 bg-gray-100">Зарплатная вилка</th>
             <th className="border p-2 bg-gray-100">Статус</th>
             <th className="border p-2 bg-gray-100">Заметка</th>
+            <th className="border p-2 bg-gray-100">Действия</th>
           </tr>
         </thead>
         <tbody>
-  {applications.map((app) => (
-    <tr key={app.id} className="hover:bg-gray-50">
-      <td className="border p-2">{app.company}</td>
-      <td className="border p-2">{app.position}</td>
-      <td className="border p-2">{app.salary}</td>
-      <td className="border p-2">{app.status}</td>
-      <td className="border p-2">{app.note}</td>
-      <td className="border p-2 flex gap-2 justify-center">
-        <button
-          onClick={() => handleEdit(app.id)}
-          className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-        >
-          Редактировать
-        </button>
-        <button
-          onClick={() => handleDelete(app.id)}
-          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Удалить
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+          {applications.map((app) => (
+            <tr key={app._id} className="hover:bg-gray-50">
+              <td className="border p-2">{app.company}</td>
+              <td className="border p-2">{app.position}</td>
+              <td className="border p-2">{app.salary}</td>
+              <td className="border p-2">{app.status}</td>
+              <td className="border p-2">{app.note}</td>
+              <td className="border p-2 flex gap-2 justify-center">
+                <button
+                  onClick={() => handleEdit(app._id)}
+                  className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Редактировать
+                </button>
+                <button
+                  onClick={() => handleDelete(app._id)}
+                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Удалить
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
-      <Modal
-  isOpen={isModalOpen}
-  onClose={() => {
-    setModalOpen(false);
-    setEditingApplication(null);
-  }}
-  onSubmit={(data) => {
-    if (editingApplication) {
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.id === editingApplication.id ? { ...app, ...data } : app
-        )
-      );
-      setEditingApplication(null);
-    } else {
-      handleAddApplication(data);
-    }
-    setModalOpen(false);
-  }}
-  initialData={editingApplication}
-/>
 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingApplication(null);
+        }}
+        onSubmit={async (data) => {
+          try {
+            if (editingApplication) {
+              const updatedApplication = await updateApplication(
+                editingApplication._id,
+                data
+              );
+              setApplications((prev) =>
+                prev.map((app) =>
+                  app._id === updatedApplication._id ? updatedApplication : app
+                )
+              );
+              setEditingApplication(null);
+            } else {
+              await handleAddApplication(data);
+            }
+            setModalOpen(false);
+          } catch (err) {
+            setError("Ошибка сохранения записи");
+          }
+        }}
+        initialData={editingApplication}
+      />
     </div>
   );
 };
