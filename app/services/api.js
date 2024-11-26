@@ -9,7 +9,7 @@ export const fetchApplications = async () => {
 
 // Добавить запись
 export const createApplication = async (application) => {
-  const response = await fetch("/api/applications", {
+  const response = await fetch(`${API_URL}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -3,10 +3,10 @@ const mongoose = require("mongoose"); // Подключаем Mongoose
 const cors = require("cors"); // Подключаем CORS для работы с фронтендом
 const bodyParser = require("body-parser");
 
-const Application = require("./models/Applicatoin"); // Импортируем модель
+const Application = require("./models/Application"); // Импортируем модель
 
 const app = express(); // Создаём приложение Express
-const PORT = 5001; // Порт, на котором будет работать сервер
+const PORT = 5000; // Порт, на котором будет работать сервер
 
 // Middleware
 app.use(cors()); // Разрешаем запросы с другого домена (например, с фронтенда)
