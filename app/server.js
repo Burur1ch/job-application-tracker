@@ -3,11 +3,7 @@ const mongoose = require("mongoose"); // Подключаем Mongoose
 const cors = require("cors"); // Подключаем CORS для работы с фронтендом
 const bodyParser = require("body-parser");
 
-<<<<<<< HEAD
 const Application = require("./models/Applicatoin"); // Импортируем модель
-=======
-const Application = require("./models/Application"); // Импортируем модель
->>>>>>> 29b0bd5c1d8ca4629e34f0ed8b0148cb0f2ac0aa
 
 const app = express(); // Создаём приложение Express
 const PORT = 5000; // Порт, на котором будет работать сервер
