@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const API_URL = "https://qmvrmx-5000.csb.app/api/applications";
+=======
+const API_URL = "http://localhost:5000/api/applications";
+>>>>>>> 29b0bd5c1d8ca4629e34f0ed8b0148cb0f2ac0aa
 
 // Получить все записи
 export const fetchApplications = async () => {
@@ -8,6 +12,7 @@ export const fetchApplications = async () => {
 };
 
 // Добавить запись
+<<<<<<< HEAD
 
 // Используйте API_URL везде:
 export const createApplication = async (application) => {
@@ -15,6 +20,21 @@ export const createApplication = async (application) => {
   https: if (!response.ok) {
     throw new Error("Ошибка при создании записи");
   }
+=======
+export const createApplication = async (application) => {
+  const response = await fetch(`${API_URL}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(application),
+  });
+
+  if (!response.ok) {
+    throw new Error("Ошибка при создании записи");
+  }
+
+>>>>>>> 29b0bd5c1d8ca4629e34f0ed8b0148cb0f2ac0aa
   return response.json();
 };
 
