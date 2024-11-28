@@ -1,3 +1,5 @@
+https://burur1ch.github.io/job-application-tracker/
+
 Server:
 
 cd app
